@@ -7,3 +7,5 @@ Beginning in June 2014, WRAS 88.5 will air GPB content from 5a.m. to 7p.m.. Sinc
 For more information about Album 88, visit their website at [http://www2.gsu.edu/~www885/](http://www2.gsu.edu/~www885/).
 
 A simple HTML 5 app that takes the feed's playlist, loads the audio file and allows the user to play, pause, and refresh the stream. Built with the Ionic framework for iOS and Android, with slight modifications to enable background playing.
+
+![Screenshot](/design/screen-retina.png "iPhone 5 screenshot")
