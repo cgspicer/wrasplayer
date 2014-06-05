@@ -10,6 +10,10 @@ A simple HTML 5 app that takes the feed's playlist, loads the audio file and all
 
 ![Screenshot](/design/screen-retina.png "iPhone 5 screenshot")
 
+[Available for Free on the App Store](https://itunes.apple.com/us/app/album-88/id883078905?ls=1&mt=8)
+
+
+
 The MIT License (MIT)
 
 Copyright (c) 2014 Coran Spicer
