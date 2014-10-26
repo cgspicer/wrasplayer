@@ -2,10 +2,13 @@ var gulp = require('gulp');
 var gutil = require('gulp-util');
 var bower = require('bower');
 var concat = require('gulp-concat');
+var compass = require('gulp-compass');
 var sass = require('gulp-sass');
 var minifyCss = require('gulp-minify-css');
 var rename = require('gulp-rename');
 var sh = require('shelljs');
+var imagemin = require('gulp-imagemin');
+var cache = require('gulp-cache');
 
 var paths = {
   sass: ['./scss/**/*.scss']
@@ -47,4 +50,23 @@ gulp.task('git-check', function(done) {
     process.exit(1);
   }
   done();
+});
+
+gulp.task('compass', function() {
+  gulp.src('./scss/*.scss')
+  .pipe(compass({
+    css: 'www/css',
+    sass: 'scss',
+    image: 'www/images',
+    javascript: 'www/js',
+    relative: true
+  }))
+  .pipe(minifyCSS())
+  .pipe(gulp.dest('www/css'));
+});
+
+gulp.task('imagemin', function() {
+  return gulp.src('wordpress/wp-content/themes/dartmouth/images/**/*')
+    .pipe(cache(imagemin({ optimizationLevel: 6, progressive: true, interlaced: true })))
+    .pipe(gulp.dest('wordpress/wp-content/themes/dartmouth/images'));
 });
