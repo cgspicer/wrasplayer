@@ -1,8 +1,17 @@
 angular.module('wras-player.controllers', [])
 // stream of album 88 factory
-.factory( 'stream88', [ '$rootScope', '$q', '$http', '$ionicLoading', function( $rootScope, $q, $http, $ionicLoading ) {
+.factory( 'stream88', [ '$rootScope', '$q', '$http', '$ionicLoading', '$timeout', '$ionicModal', function( $rootScope, $q, $http, $ionicLoading, $timeout, $ionicModal ) {
 
   var stream;
+  var waitingForStream = false;
+  // set up a modal for displaying connectivity errors
+  $ionicModal.fromTemplateUrl('connection-error.html', {
+    scope: $rootScope,
+    animation: 'slide-in-down'
+  }).then(function(modal) {
+    $rootScope.connectionWarning = modal;
+  });
+
   // defer a call to the stream information
   var loadStream = function(){
     var streamDeferred = $q.defer();
@@ -10,23 +19,29 @@ angular.module('wras-player.controllers', [])
       template: 'Loading Stream...'
     });
     $http.get('http://www.publicbroadcasting.net/wras/ppr/wras2.m3u')
-    .success(function ( data, status ) {
+    .success(function ( data ) {
       streamDeferred.resolve( data );
-    }).error(function ( data, status ) {
-      streamDeferred.resolve( data );
+    }).error(function ( data ) {
+      $ionicLoading.hide();
+      showConnectionWarning();
     });
     var handleStream = streamDeferred.promise;
     // handle the resolved stream information
-    handleStream.then( function( data, status ) {
+    handleStream.then( function( data ) {
+      if ( status === 'error' ) {
+        $ionicLoading.hide();
+        showConnectionWarning();
+        return false;
+      }
       var streamUrl = parseStreamURL( data );
       stream = new Audio();
       stream.addEventListener( 'canplay', handleLoad );
+      stream.addEventListener( 'stalled', handleStalled );
+      stream.addEventListener( 'error', handleError );
       stream.src = streamUrl;
       stream.load();
-      // set up our event listeners
     });
   };
-
   var pauseStream = function() {
     stream.pause();
     $rootScope.$broadcast('streamPaused');
@@ -50,7 +65,43 @@ angular.module('wras-player.controllers', [])
     $ionicLoading.hide();
     playStream();
   };
+  var handleStalled = function() {
+    // handler for when the stream resumes itself
+    var streamResumed = function() {
+      waitingForStream = false;
+      stream.removeEventListener( 'progress', streamResumed, false );
+      // stream has resumed, so let's reset state
+      $ionicLoading.hide();
+      $rootScope.$broadcast('streamPlaying');
+    }
 
+    // set the state to paused
+    waitingForStream = true;
+    $ionicLoading.show({
+      template: 'Waiting for Stream...'
+    });
+    // set up a fail safe for 30 seconds
+    $timeout( function() {
+      if ( waitingForStream ) {
+        stream.removeEventListener( 'progress', streamResumed, false );
+        // stream is taking too long to load on its own, refresh it
+        $ionicLoading.hide();
+        stream.pause();
+        showConnectionWarning();
+      } else {
+        // do nothing
+      }
+    }, 30000);
+    $rootScope.$broadcast('streamPaused');
+    stream.addEventListener( 'progress', streamResumed );
+
+  };
+  var handleError = function() {
+    $ionicLoading.hide();
+    showConnectionWarning();
+  };
+
+  // helper functions
   var parseStreamURL = function( msg ) {
     var lines = msg.split("\n");
     for ( var i=0;i<lines.length;i++){
@@ -59,6 +110,9 @@ angular.module('wras-player.controllers', [])
         return streamUrl;
       }
     }
+  };
+  var showConnectionWarning = function() {
+    $rootScope.connectionWarning.show();
   };
 
   // INIT
