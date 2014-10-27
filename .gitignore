@@ -2,3 +2,5 @@ node_modules/
 *.css
 platforms/
 plugins
+.sass-cache
+
