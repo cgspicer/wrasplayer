@@ -2,8 +2,9 @@ angular.module('wras-player.controllers', [])
 // stream of album 88 factory
 .factory( 'stream88', [ '$rootScope', '$q', '$http', '$ionicLoading', '$timeout', '$ionicModal', function( $rootScope, $q, $http, $ionicLoading, $timeout, $ionicModal ) {
 
-  var stream;
-  var waitingForStream = false;
+  var stream
+      waitingForStream = false,
+      isFirstStall = true;
   // set up a modal for displaying connectivity errors
   $ionicModal.fromTemplateUrl('connection-error.html', {
     scope: $rootScope,
@@ -36,7 +37,7 @@ angular.module('wras-player.controllers', [])
       var streamUrl = parseStreamURL( data );
       stream = new Audio();
       stream.addEventListener( 'canplay', handleLoad );
-      stream.addEventListener( 'stalled', handleStalled );
+      //stream.addEventListener( 'stalled', handleStalled );
       stream.addEventListener( 'error', handleError );
       stream.src = streamUrl;
       stream.load();
@@ -66,6 +67,10 @@ angular.module('wras-player.controllers', [])
     playStream();
   };
   var handleStalled = function() {
+    if ( isFirstStall ) {
+      isFirstStall = false;
+      return false;
+    }
     // handler for when the stream resumes itself
     var streamResumed = function() {
       waitingForStream = false;
@@ -152,12 +157,14 @@ angular.module('wras-player.controllers', [])
     $scope.isPlaying = false;
     $scope.playStyle = disabledStyle;
     $scope.pauseStyle = activeStyle;
+    TweenMax.to( '.glow', 2.5, { scale: 1, autoAlpha: .1 } );
   });
 
   $scope.$on( 'streamPlaying', function() {
     $scope.isPlaying  = true;
     $scope.playStyle  = activeStyle;
     $scope.pauseStyle = disabledStyle;
+    TweenMax.to( '.glow', 2.5, { scale: 23, autoAlpha: .85 } );
   });
 
 }])
