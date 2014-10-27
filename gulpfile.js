@@ -61,7 +61,7 @@ gulp.task('compass', function() {
     javascript: 'www/js',
     relative: true
   }))
-  .pipe(minifyCSS())
+  .pipe(minifyCss())
   .pipe(gulp.dest('www/css'));
 });
 
