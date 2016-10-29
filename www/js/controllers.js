@@ -14,44 +14,28 @@ angular.module('wras-player.controllers', [])
   });
 
   // defer a call to the stream information
-  var loadStream = function(){
-    var streamDeferred = $q.defer();
-    $ionicLoading.show({
-      template: 'Loading Stream...'
-    });
-    $http.get('http://www.publicbroadcasting.net/wras/ppr/wras2.m3u')
-    .success(function ( data ) {
-      streamDeferred.resolve( data );
-    }).error(function ( data ) {
-      $ionicLoading.hide();
-      showConnectionWarning();
-    });
-    var handleStream = streamDeferred.promise;
-    // handle the resolved stream information
-    handleStream.then( function( data ) {
-      if ( status === 'error' ) {
-        $ionicLoading.hide();
-        showConnectionWarning();
-        return false;
-      }
-      var streamUrl = parseStreamURL( data );
-      stream = new Audio();
-      stream.addEventListener( 'canplay', handleLoad );
-      //stream.addEventListener( 'stalled', handleStalled );
-      stream.addEventListener( 'error', handleError );
-      stream.src = streamUrl;
-      stream.load();
-    });
+  var loadStream = function()
+  {
+    streamUrl = 'http://17003.live.streamtheworld.com:80/WRASFM_SC';
+    stream = new Audio();
+    stream.addEventListener( 'loadstart', handleLoad );
+    stream.addEventListener( 'stalled', handleStalled );
+    stream.addEventListener( 'error', handleError );
+    stream.src = streamUrl;
+    stream.load();
   };
-  var pauseStream = function() {
+  var pauseStream = function()
+  {
     stream.pause();
     $rootScope.$broadcast('streamPaused');
   };
-  var playStream = function() {
+  var playStream = function()
+  {
     stream.play();
     $rootScope.$broadcast('streamPlaying');
   };
-  var refreshStream = function() {
+  var refreshStream = function()
+  {
     $ionicLoading.show({
       template: 'Loading Stream...'
     });
@@ -61,12 +45,14 @@ angular.module('wras-player.controllers', [])
     $rootScope.$broadcast('streamPaused');
   };
   // handlers for stream events
-  var handleLoad = function() {
+  var handleLoad = function()
+  {
     $rootScope.showControls = true;
     $ionicLoading.hide();
     playStream();
   };
-  var handleStalled = function() {
+  var handleStalled = function()
+  {
     if ( isFirstStall ) {
       isFirstStall = false;
       return false;
@@ -99,23 +85,14 @@ angular.module('wras-player.controllers', [])
     }, 30000);
     $rootScope.$broadcast('streamPaused');
     stream.addEventListener( 'progress', streamResumed );
-
   };
-  var handleError = function() {
+  var handleError = function()
+  {
     $ionicLoading.hide();
     showConnectionWarning();
   };
 
   // helper functions
-  var parseStreamURL = function( msg ) {
-    var lines = msg.split("\n");
-    for ( var i=0;i<lines.length;i++){
-      if ( lines[i].indexOf('http://') > -1 ) {
-        var streamUrl = lines[i];
-        return streamUrl;
-      }
-    }
-  };
   var showConnectionWarning = function() {
     $rootScope.connectionWarning.show();
   };
@@ -164,7 +141,7 @@ angular.module('wras-player.controllers', [])
     $scope.isPlaying  = true;
     $scope.playStyle  = activeStyle;
     $scope.pauseStyle = disabledStyle;
-    TweenMax.to( '.glow', 2.5, { scale: 23, autoAlpha: .85 } );
+    TweenMax.to( '.glow', 2.5, { scale: 23, autoAlpha: 1 } );
   });
 
 }])
